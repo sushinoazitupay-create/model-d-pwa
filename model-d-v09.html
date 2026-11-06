@@ -16,9 +16,9 @@
 <div class="scroll"><table><thead><tr><th>馬番</th><th>馬名</th><th>照合状態</th><th>理由</th><th>過去走数</th><th>直近走日</th><th>直近競馬場</th><th>直近騎手</th><th>直近斤量</th><th>直近距離</th><th>当日以降除外</th></tr></thead><tbody id="pastRows"></tbody></table></div><p>公式ZIPの取得は手動です。端末間の蓄積データ自動同期、中央競馬データ取得、休養理由の自動判定、能力予測は未実装。全履歴をJSONへ埋め込まず、照合した過去走と元ファイルのハッシュを保存します。</p></section><section class="panel"><h2>⑤ 全頭特徴量・比較</h2>
 <p>ドクターの研究項目を基に、入力データから全頭を比較します。成績の率は過去の集計値で、今回の複勝確率・能力順位ではありません。条件別の標本数も確認してください。</p>
 <div class="actions"><button id="featureCompute">選択レースの特徴量を算出</button><button id="featureAll">全レースの特徴量を算出</button><button id="featureExport">選択レースの特徴量CSV保存</button></div>
-<div class="fields"><label>表示グループ<select id="featureGroup"><option>基本比較</option><option>成績比較</option><option>調査資料</option><option>過去走比較</option></select></label><label>値による並べ替え<select id="featureSort"><option value="">馬番順（入力順）</option></select></label><label>並べ替え方向<select id="featureDirection"><option value="desc">大きい値から</option><option value="asc">小さい値から</option></select></label></div>
+<div class="fields"><label>表示グループ<select id="featureGroup"><option>基本比較</option><option>成績比較</option><option>調査資料</option><option>過去走比較</option></select></label><label>値による並べ替え<select id="featureSort"><option value="__rank">暫定比較順位順</option></select></label><label>並べ替え方向<select id="featureDirection"><option value="desc">大きい値から</option><option value="asc">小さい値から</option></select></label></div>
 <p>並べ替えは特徴量の値順です。能力順位・推奨順位は生成しません。欠損は0にせず未取得、資料の記述は未照合として残します。斤量比較は取消・除外等を除く取込候補が対象で、出走確定の保証ではありません。</p><div class="notice" id="featureStatus" role="status">未算出</div><p>一覧は横にスクロールできます。「根拠・状態」で入力列・計算方法を確認できます。JSON保存・コピー・履歴には算出済みの特徴量を含めます。</p><div class="scroll"><table><thead id="featureHead"></thead><tbody id="featureRows"></tbody></table></div>
-<details><summary>過去走・調査資料を使うには</summary><p>NARの出馬表に含まれる全成績・当競馬場成績・うち当距離成績・騎手成績などは自動集計します。前走日・前走斤量・前走距離・前走騎手・過去騎手・前走着差秒や各調査資料は、対応列が入力CSVにある場合のみ使います。⑤で個体4項目を照合した過去走から、不足する前走項目を補います。同名馬だけでは結合しません。今回の着順・タイム・着差は特徴量に使いません。未取得項目を埋める自動取得は未実装です。</p></details></section><section class="panel"><h2>状態・制約</h2><p>外部ライブラリ不要。CSVはオフラインで利用可能。圧縮ZIPはブラウザのDecompressionStream(deflate-raw)が必要です。非対応端末では端末側で解凍してCSVを選択してください。確定結果は原データとして分離保存し、発走前スナップショットを上書きしません。</p><p>v0.7はユーザーのiPad実機で読込・履歴復元・JSON/CSV保存を確認済み。v0.9のiPad・Android実機は確認待ち。斤量記号は元表記を保持し、数字部分を形式検査します。</p></section></main><script>'use strict';
+<details><summary>過去走・調査資料を使うには</summary><p>NARの出馬表に含まれる全成績・当競馬場成績・うち当距離成績・騎手成績などは自動集計します。前走日・前走斤量・前走距離・前走騎手・過去騎手・前走着差秒や各調査資料は、対応列が入力CSVにある場合のみ使います。⑤で個体4項目を照合した過去走から、不足する前走項目を補います。同名馬だけでは結合しません。今回の着順・タイム・着差は特徴量に使いません。未取得項目を埋める自動取得は未実装です。</p></details></section><section class="panel"><h2>⑥ 暫定比較順位（ルールによる参考）</h2><p>全成績・当競馬場・当距離・当騎手の過去3着内成績を等重みで比較します。各観点は「(3着内回数+1)÷(出走数+2)×100」で少数標本の極端な値を和らげ、利用できる2項目以上の平均を参考点にします。欠損を0点にせず、2項目未満・取消等は順位を付けません。項目数が異なる比較や少数標本は注意欄で確認してください。</p><p>学習済み予測、能力の確定順位、今回の勝率・複勝確率ではありません。斤量・休養・展開・人気はこの参考点へ加点しません。同点は同順位です。入力監査の合否も別に確認してください。</p><div class="actions"><button id="rankingExport">暫定比較順位CSV保存</button></div><div class="notice" id="rankingStatus" role="status">未算出</div><div class="scroll"><table><thead><tr><th>暫定順位</th><th>馬番</th><th>馬名</th><th>参考点</th><th>使用項目数</th><th>計算内訳</th><th>理由・注意</th></tr></thead><tbody id="rankingRows"></tbody></table></div></section><section class="panel"><h2>状態・制約</h2><p>外部ライブラリ不要。CSVはオフラインで利用可能。圧縮ZIPはブラウザのDecompressionStream(deflate-raw)が必要です。非対応端末では端末側で解凍してCSVを選択してください。確定結果は原データとして分離保存し、発走前スナップショットを上書きしません。</p><p>v0.7はユーザーのiPad実機で読込・履歴復元・JSON/CSV保存を確認済み。v0.9のiPad・Android実機は確認待ち。斤量記号は元表記を保持し、数字部分を形式検査します。</p></section></main><script>'use strict';
 const venues=['門別','盛岡','水沢','浦和','船橋','大井','川崎','金沢','笠松','名古屋','園田','姫路','高知','佐賀'];
 const columns=['開催日','競馬場','R番号','レース名','発走時刻','距離','馬場状態','頭数','枠番','馬番','馬名','騎手','調教師','所属','性齢','斤量','馬体重','増減','人気','単勝オッズ','状態','前走騎手','過去騎手','前走距離','前走不利','メモ'];
 const raceFields=columns.slice(0,8),aliases={'競走年月日':'開催日','レース番号':'R番号','騎手名':'騎手','負担重量':'斤量','調教師所属':'所属','馬体重増減':'増減','馬場':'馬場状態'};
@@ -129,11 +129,11 @@ function featuresCsv(r){if(!analysisCurrent(r))throw Error('特徴量が未算�
 function renderFeatures(){
  let r=current(),active=analysisCurrent(r);$('featureStatus').textContent=!r?'データ未読込':active?'特徴量算出日時 '+r.analysis.calculatedAt+' ／ '+r.horses.length+'頭 ／ 入力データに基づく記述値・予測なし':'特徴量は未算出または失効。算出ボタンを押してください。';
  let defs=FEATURE_DEFS.filter(d=>d.group===$('featureGroup').value),sort=$('featureSort').value;
- if(!defs.some(d=>d.id===sort))sort='';$('featureSort').innerHTML='<option value="">馬番順（入力順）</option>'+defs.map(d=>'<option value="'+d.id+'">'+safe(d.label)+'</option>').join('');$('featureSort').value=sort;
- $('featureHead').innerHTML='<tr><th>馬番</th><th>馬名</th>'+defs.map(d=>'<th>'+safe(d.label)+'</th>').join('')+'</tr>';
+ if(sort!==''&&sort!=='__rank'&&!defs.some(d=>d.id===sort))sort='__rank';$('featureSort').innerHTML='<option value="__rank">暫定比較順位順</option><option value="">馬番順（入力順）</option>'+defs.map(d=>'<option value="'+d.id+'">'+safe(d.label)+'</option>').join('');$('featureSort').value=sort;$('featureDirection').disabled=sort==='__rank';
+ $('featureHead').innerHTML='<tr><th>暫定順位</th><th>馬番</th><th>馬名</th>'+defs.map(d=>'<th>'+safe(d.label)+'</th>').join('')+'</tr>';
  let rows=active?[...r.analysis.records]:[];
- if(sort)rows.sort((a,b)=>{let x=a.features[sort].value,y=b.features[sort].value;if(x===null)return y===null?0:1;if(y===null)return -1;let diff=typeof x==='number'&&typeof y==='number'?x-y:String(x).localeCompare(String(y),'ja');return $('featureDirection').value==='asc'?diff:-diff});
- $('featureRows').innerHTML=rows.map(row=>'<tr><td>'+safe(row.horseNumber)+'</td><td>'+safe(row.horseName)+(row.eligibleCandidate?'':'<br>比較対象外')+'</td>'+defs.map(d=>{let f=row.features[d.id];return '<td><strong>'+safe(featureText(f))+'</strong><details><summary>根拠・状態</summary>'+safe(f.status+'／'+f.source.join('・')+'／'+(f.reason||f.formula)+(f.smallSample?'／5件未満の少数標本':'')+(f.documentSource?'／資料元: '+f.documentSource:''))+'</details></td>'}).join('')+'</tr>').join('')||'<tr><td colspan="'+(defs.length+2)+'">算出した全頭の特徴量をここに表示します。</td></tr>';
+ if(sort)rows.sort((a,b)=>{let x=sort==='__rank'?a.provisionalRank??null:a.features[sort].value,y=sort==='__rank'?b.provisionalRank??null:b.features[sort].value;if(x===null)return y===null?0:1;if(y===null)return -1;let diff=typeof x==='number'&&typeof y==='number'?x-y:String(x).localeCompare(String(y),'ja');return sort==='__rank'||$('featureDirection').value==='asc'?diff:-diff});
+ $('featureRows').innerHTML=rows.map(row=>'<tr><td>'+safe(row.provisionalRank??'—')+'</td><td>'+safe(row.horseNumber)+'</td><td>'+safe(row.horseName)+(row.eligibleCandidate?'':'<br>比較対象外')+'</td>'+defs.map(d=>{let f=row.features[d.id];return '<td><strong>'+safe(featureText(f))+'</strong><details><summary>根拠・状態</summary>'+safe(f.status+'／'+f.source.join('・')+'／'+(f.reason||f.formula)+(f.smallSample?'／5件未満の少数標本':'')+(f.documentSource?'／資料元: '+f.documentSource:''))+'</details></td>'}).join('')+'</tr>').join('')||'<tr><td colspan="'+(defs.length+3)+'">算出した全頭の特徴量をここに表示します。</td></tr>';
 }
 function featureGuard(fn){return async()=>{try{await fn()}catch(e){$('featureStatus').textContent='特徴量処理: '+e.message}}}
 if(typeof document!=='undefined'){
@@ -243,4 +243,38 @@ if(typeof document!=='undefined'){
  renderHistory09();
 }
 if(typeof module!=='undefined')Object.assign(module.exports,{HISTORY_VERSION,horseIdentity,historyFromTables,mergeHistory,buildPastIndex,linkedHistory,applyPastToRace,startStatus,computeFeatures,featureInput,featuresCsv,historyComparisonCsv});
+
+const RANKING_VERSION='0.9-reference-ranking-1';
+const RANK_COMPONENTS=[['careerTop3Pct','全成績'],['venueTop3Pct','当競馬場'],['distanceTop3Pct','当距離'],['pairTop3Pct','当騎手']];
+const ingestBeforeRank09=ingest;
+ingest=function(tables){let parsed=ingestBeforeRank09(tables);for(let r of parsed.races)r.featureOriginalContext=structuredClone(r.meta);return parsed};
+function guardFeatureContext09(r,a){for(let [i,row] of a.records.entries()){let h=r.horses[i],context=r.featureOriginalContext||{'競馬場':originalField(h,'競馬場'),'距離':originalField(h,'距離')},sameVenue=!featureBlank(context['競馬場'])&&context['競馬場']===r.meta['競馬場'],sameDistance=sameVenue&&!featureBlank(context['距離'])&&!featureBlank(r.meta['距離'])&&Number(context['距離'])===Number(r.meta['距離']);if(!sameVenue)for(let k of ['venueStarts','venueTop3Pct'])row.features[k]=featureMissing(['当競馬場成績'],'元データの競馬場条件が未確認または変更されている');if(!sameDistance)for(let k of ['distanceStarts','distanceTop3Pct'])row.features[k]=featureMissing(['うち当距離成績'],'元データの競馬場・距離条件が未確認または変更されている')}}
+function referenceRanking(r){
+ let records=r.analysis?.records||[],numbers=r.horses.map(h=>Number(h['馬番']));
+ let rows=records.map((record,i)=>{let h=r.horses[i],used=[],missing=[];
+  for(let [id,label] of RANK_COMPONENTS){let f=record.features[id];if(!f||f.value===null||!f.counts||!Number.isSafeInteger(f.sampleSize)||f.sampleSize<=0){missing.push(label);continue}let successes=f.counts.slice(0,3).reduce((a,b)=>a+b,0);used.push({id,label,starts:f.sampleSize,top3:successes,points:100*(successes+1)/(f.sampleSize+2),source:f.source})}
+  let reason=null;
+  if(!eligibleForFeature(h))reason='取消・除外等のため順位なし';
+  else if(featureBlank(h['馬名'])||featureBlank(h['騎手'])||!valid(h['馬番'],true,1,16)||numbers.filter(n=>n===Number(h['馬番'])).length>1)reason='馬番・馬名・騎手の入力を確認してください';
+  else if(used.length<2)reason='成績の有効項目が2項目未満のため順位なし';
+  let score=reason?null:Math.round(used.reduce((sum,c)=>sum+c.points,0)/used.length*100)/100;
+  return {horseNumber:h['馬番'],horseName:h['馬名'],rank:null,score,used,missing,coverage:used.length+'/4',reason,notes:['入力基準の暫定比較。能力・的中・複勝確率ではない',...(used.length<4?['欠損項目を除いて平均しているため比較条件が異なる']:[]),...(used.some(c=>c.starts<5)?['5件未満の成績を含む']:[])]};
+ });
+ rows.sort((a,b)=>a.score===null?(b.score===null?Number(a.horseNumber)-Number(b.horseNumber):1):b.score===null?-1:b.score-a.score||Number(a.horseNumber)-Number(b.horseNumber));
+ let last=null,rank=null;for(let i=0;i<rows.length;i++){let row=rows[i];if(row.score===null)continue;if(last!==row.score)rank=i+1;row.rank=rank;last=row.score}
+ return {version:RANKING_VERSION,calculatedAt:new Date().toISOString(),formula:'各観点の参考点=(過去3着内回数+1)/(出走数+2)×100。利用可能な観点を等重み平均。2項目以上必要。小数第2位まで同点なら同順位。',components:RANK_COMPONENTS.map(c=>c[1]),minimumComponents:2,records:rows,prediction:false};
+}
+const computeBeforeRanking09=computeFeatures;
+computeFeatures=function(r){let a=computeBeforeRanking09(r);guardFeatureContext09(r,a);a.ranking=referenceRanking(r);let ranks=new Map(a.ranking.records.map(row=>[row.horseNumber,row]));for(let row of a.records){let rank=ranks.get(row.horseNumber);row.provisionalRank=rank?.rank??null;row.referenceScore=rank?.score??null}return a};
+function rankingCsv09(r){if(!analysisCurrent(r)||r.analysis.ranking?.version!==RANKING_VERSION)throw Error('特徴量と暫定順位を再算出してください');let ranking=r.analysis.ranking;return '\uFEFF'+[['開催日','競馬場','R番号','暫定比較順位','馬番','馬名','参考点（確率ではない）','使用項目数','計算内訳','不足項目','順位なし理由','注意','順位ルール','特徴量算出日時'],...ranking.records.map(row=>[r.meta['開催日'],r.meta['競馬場'],r.meta['R番号'],row.rank,row.horseNumber,row.horseName,row.score,row.coverage,row.used.map(c=>c.label+': '+c.points.toFixed(2)+'点 / '+c.top3+'/'+c.starts+'回').join('／'),row.missing.join('／'),row.reason,row.notes.join('／'),ranking.version,r.analysis.calculatedAt])].map(row=>row.map(cell).join(',')).join('\r\n')}
+const featureCsvBeforeRank09=featuresCsv;
+featuresCsv=function(r){let rows=parseCsv(featureCsvBeforeRank09(r)),ranking=r.analysis?.ranking;if(ranking?.version!==RANKING_VERSION)throw Error('暫定順位を再算出してください');let positions=new Map(ranking.records.map(row=>[row.horseNumber,row]));rows[0].push('暫定比較順位','参考点（確率ではない）','順位使用項目数','順位ルール');for(let i=1;i<rows.length;i++){let p=positions.get(r.analysis.records[i-1].horseNumber);rows[i].push(p?.rank??'',p?.score??'',p?.coverage??'',RANKING_VERSION)}return '\uFEFF'+rows.map(row=>row.map(cell).join(',')).join('\r\n')};
+function renderRanking09(){let r=current(),ranking=analysisCurrent(r)?r.analysis.ranking:null,validRanking=ranking?.version===RANKING_VERSION;$('rankingStatus').textContent=validRanking?'暫定比較順位／'+ranking.records.filter(row=>row.rank!==null).length+'頭に順位付け・'+ranking.records.filter(row=>row.rank===null).length+'頭は順位なし／'+ranking.calculatedAt:'特徴量を算出すると暫定比較順位を表示します。';$('rankingRows').innerHTML=validRanking?ranking.records.map(row=>'<tr>'+[row.rank??'順位なし',row.horseNumber,row.horseName,row.score===null?'—':row.score.toFixed(2)+'点',row.coverage,row.used.map(c=>c.label+': '+c.points.toFixed(2)+'点（3着内'+c.top3+'/'+c.starts+'回）').join('／'),[row.reason,...row.notes].filter(Boolean).join('／')].map(v=>'<td>'+safe(v)+'</td>').join('')+'</tr>').join(''):'<tr><td colspan="7">未算出・失効・旧ルールの場合は再算出してください。</td></tr>'}
+if(typeof document!=='undefined'){
+ const renderBeforeRank09=render;render=function(){renderBeforeRank09();renderRanking09()};
+ for(let id of ['featureCompute','featureAll','pastLink']){let old=$(id).onclick;$(id).onclick=async()=>{await old();renderRanking09()}}
+ $('rankingExport').onclick=featureGuard(()=>save('MODEL-D-v09-reference-ranking-'+Date.now()+'.csv',rankingCsv09(current()),'text/csv;charset=utf-8'));
+ renderRanking09();
+}
+if(typeof module!=='undefined')Object.assign(module.exports,{RANKING_VERSION,referenceRanking,ingest,computeFeatures,featuresCsv,rankingCsv09});
 </script></body></html>
