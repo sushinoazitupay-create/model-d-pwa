@@ -4,7 +4,7 @@
   "name": "MODEL-D 地方競馬AI",
   "short_name": "MODEL-D",
   "description": "地方競馬AI 全頭データ監査",
-  "start_url": "./",
+  "start_url": "./model-d-v05.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#251a14",
